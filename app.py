@@ -52,6 +52,62 @@ def serialize_feedback(row: sqlite3.Row) -> dict:
     }
 
 
+def compute_stats() -> dict:
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT * FROM feedback").fetchall()
+    finally:
+        conn.close()
+
+    total = len(rows)
+    if total == 0:
+        return {
+            "total_feedback": 0,
+            "average_rating": None,
+            "status_counts": {},
+            "category_counts": {},
+            "trend": [],
+        }
+
+    status_counts = {}
+    category_counts = {}
+    ratings: List[int] = []
+    for row in rows:
+        status = row["status"]
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+        categories = json.loads(row["categories"])
+        for cat in categories:
+            category_counts[cat] = category_counts.get(cat, 0) + 1
+
+        ratings.append(row["rating"])
+
+    # Trend for last 7 days including today
+    today = datetime.utcnow().date()
+    trend = []
+    for i in range(6, -1, -1):
+        day = today.fromordinal(today.toordinal() - i)
+        day_str = day.isoformat()
+        day_count = 0
+        for row in rows:
+            try:
+                created_date = datetime.fromisoformat(row["created_at"]).date()
+            except ValueError:
+                continue
+            if created_date == day:
+                day_count += 1
+        trend.append({"date": day_str, "count": day_count})
+
+    average_rating = sum(ratings) / len(ratings) if ratings else None
+    return {
+        "total_feedback": total,
+        "average_rating": average_rating,
+        "status_counts": status_counts,
+        "category_counts": category_counts,
+        "trend": trend,
+    }
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -107,6 +163,11 @@ def list_feedback():
     finally:
         conn.close()
     return jsonify([serialize_feedback(row) for row in rows])
+
+
+@app.route("/api/stats", methods=["GET"])
+def stats():
+    return jsonify(compute_stats())
 
 
 @app.route("/api/feedback/<int:feedback_id>/status", methods=["POST"])

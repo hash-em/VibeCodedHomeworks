@@ -1,12 +1,38 @@
 const form = document.getElementById("feedback-form");
 const messageEl = document.getElementById("form-message");
 const recentList = document.getElementById("recent-list");
+const ratingButtons = Array.from(document.querySelectorAll(".rating-row .star"));
+const ratingInput = document.getElementById("rating");
+const ratingLabel = document.getElementById("rating-label");
+
+const ratingCopy = {
+  1: "Needs a rescue",
+  2: "Could be warmer",
+  3: "Okay",
+  4: "Tasty",
+  5: "Great",
+};
 
 async function fetchRecent() {
   const response = await fetch("/api/feedback");
   const data = await response.json();
   renderFeedbackList(data, recentList, false);
 }
+
+function setRating(value) {
+  ratingInput.value = value;
+  ratingLabel.textContent = ratingCopy[value];
+  ratingButtons.forEach((btn) => {
+    const isActive = Number(btn.dataset.value) <= value;
+    btn.classList.toggle("active", isActive);
+  });
+}
+
+ratingButtons.forEach((button) => {
+  button.addEventListener("click", () => setRating(Number(button.dataset.value)));
+});
+
+setRating(Number(ratingInput.value));
 
 function renderFeedbackList(items, container, includeActions) {
   container.innerHTML = "";
@@ -21,7 +47,7 @@ function renderFeedbackList(items, container, includeActions) {
 
     wrapper.innerHTML = `
       <div class="feedback-meta">
-        <span>Rating: ${"⭐".repeat(item.rating)}</span>
+        <span class="rating-stars">${"⭐".repeat(item.rating)}</span>
         <span>${new Date(item.created_at).toLocaleString()}</span>
         <span class="status-pill" data-status="${item.status}">${item.status}</span>
       </div>
@@ -55,6 +81,7 @@ function renderFeedbackList(items, container, includeActions) {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   messageEl.textContent = "Sending...";
+  messageEl.style.color = "var(--muted)";
 
   const formData = new FormData(form);
   const categories = formData.getAll("categories");
@@ -74,9 +101,9 @@ form.addEventListener("submit", async (event) => {
     }
 
     messageEl.textContent = data.message;
-    messageEl.style.color = "green";
+    messageEl.style.color = "var(--success)";
     form.reset();
-    document.getElementById("rating").value = 5;
+    setRating(5);
     await fetchRecent();
   } catch (error) {
     messageEl.textContent = error.message;

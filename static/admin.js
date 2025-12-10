@@ -1,5 +1,11 @@
 const adminList = document.getElementById("admin-feedback-list");
 const statusFilter = document.getElementById("status-filter");
+const statTotal = document.getElementById("stat-total");
+const statAverage = document.getElementById("stat-average");
+const statOpen = document.getElementById("stat-open");
+const categoryBars = document.getElementById("category-bars");
+const statusBars = document.getElementById("status-bars");
+const trendBars = document.getElementById("trend-bars");
 
 async function fetchFeedback() {
   const params = new URLSearchParams();
@@ -50,7 +56,7 @@ function renderFeedbackList(items) {
     select.addEventListener("change", async (event) => {
       const newStatus = event.target.value;
       await updateStatus(item.id, newStatus);
-      await fetchFeedback();
+      await Promise.all([fetchFeedback(), fetchStats()]);
     });
 
     adminList.appendChild(wrapper);
@@ -70,5 +76,65 @@ async function updateStatus(id, status) {
   }
 }
 
+async function fetchStats() {
+  const response = await fetch("/api/stats");
+  const data = await response.json();
+
+  statTotal.textContent = data.total_feedback;
+  statAverage.textContent = data.average_rating?.toFixed(1) ?? "—";
+  statOpen.textContent = (data.status_counts["New"] || 0) + (data.status_counts["In progress"] || 0);
+
+  renderBars(categoryBars, data.category_counts, "No feedback yet.");
+  renderBars(statusBars, data.status_counts, "No statuses yet.");
+  renderTrend(trendBars, data.trend);
+}
+
+function renderBars(container, entries, emptyText) {
+  container.innerHTML = "";
+  const pairs = Object.entries(entries || {}).sort((a, b) => b[1] - a[1]);
+  if (!pairs.length) {
+    container.innerHTML = `<p class="muted">${emptyText}</p>`;
+    return;
+  }
+
+  const max = Math.max(...pairs.map(([_, count]) => count));
+  pairs.forEach(([label, count]) => {
+    const item = document.createElement("div");
+    item.className = "bar-item";
+    const width = max ? Math.max((count / max) * 100, 8) : 0;
+    item.innerHTML = `
+      <div class="bar-top">
+        <span>${label}</span>
+        <span>${count}</span>
+      </div>
+      <div class="bar"><span style="width:${width}%"></span></div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function renderTrend(container, trend) {
+  container.innerHTML = "";
+  if (!trend.length) {
+    container.innerHTML = '<p class="muted">No activity yet.</p>';
+    return;
+  }
+  const max = Math.max(...trend.map((item) => item.count));
+  trend.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "bar-item";
+    const width = max ? Math.max((item.count / max) * 100, 8) : 0;
+    row.innerHTML = `
+      <div class="bar-top">
+        <span>${item.date}</span>
+        <span>${item.count}</span>
+      </div>
+      <div class="bar"><span style="width:${width}%"></span></div>
+    `;
+    container.appendChild(row);
+  });
+}
+
 statusFilter.addEventListener("change", fetchFeedback);
 fetchFeedback();
+fetchStats();
