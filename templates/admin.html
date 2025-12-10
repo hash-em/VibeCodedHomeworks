@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" id="feedback">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Operations</p>
+      <h1>Admin Dashboard</h1>
+      <p class="muted">Scan new reports, sort by status, and move work forward.</p>
+    </div>
+    <div class="pill pill-soft">Updated live</div>
+  </div>
+  <div class="filters">
+    <label for="status-filter">Status</label>
+    <select id="status-filter">
+      <option value="">All</option>
+      <option value="New">New</option>
+      <option value="In progress">In progress</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+  </div>
+  <div id="admin-feedback-list" class="feedback-list"></div>
+</section>
+
+<section class="card" id="stats">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Insights</p>
+      <h2>Statistics</h2>
+      <p class="muted">Track momentum, spot hotspots, and celebrate quick wins.</p>
+    </div>
+    <div class="pill pill-outline">Auto-refresh</div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <p class="muted">Total feedback</p>
+      <div class="stat-value" id="stat-total">—</div>
+      <p class="stat-foot">All-time submissions</p>
+    </div>
+    <div class="stat-card">
+      <p class="muted">Average rating</p>
+      <div class="stat-value" id="stat-average">—</div>
+      <p class="stat-foot">Across all categories</p>
+    </div>
+    <div class="stat-card">
+      <p class="muted">Open items</p>
+      <div class="stat-value" id="stat-open">—</div>
+      <p class="stat-foot">New + In progress</p>
+    </div>
+  </div>
+
+  <div class="stat-panels">
+    <div class="stat-panel">
+      <div class="panel-header">
+        <h3>By category</h3>
+        <span class="muted">Top themes</span>
+      </div>
+      <div class="chart-row">
+        <canvas id="category-pie" width="160" height="160"></canvas>
+        <div id="category-bars" class="bar-list"></div>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="panel-header">
+        <h3>Status mix</h3>
+        <span class="muted">Progress snapshot</span>
+      </div>
+      <div class="chart-row">
+        <canvas id="status-pie" width="160" height="160"></canvas>
+        <div id="status-bars" class="bar-list"></div>
+      </div>
+    </div>
+    <div class="stat-panel wide">
+      <div class="panel-header">
+        <h3>Last 7 days</h3>
+        <span class="muted">Pulse of submissions</span>
+      </div>
+      <div id="trend-bars" class="bar-list compact"></div>
+    </div>
+    <div class="stat-panel">
+      <div class="panel-header">
+        <h3>Attention magnets</h3>
+        <span class="muted">Most-upvoted feedback</span>
+      </div>
+      <div id="attention-list" class="attention-list"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin.js"></script>
+{% endblock %}
