@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Restudiant Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/main.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <div class="logo">Restudiant</div>
+        <nav>
+          <a href="/">Submit feedback</a>
+          <a href="/admin#feedback">Admin</a>
+          <a href="/admin#stats">Statistics</a>
+        </nav>
+      </header>
+      <main class="content">{% block content %}{% endblock %}</main>
+      <footer class="site-footer">
+        Crafted for Bouchoucha University Restaurant — fueled by student voices
+      </footer>
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

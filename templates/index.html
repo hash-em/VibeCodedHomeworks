@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-content">
+    <p class="eyebrow">Share & savor</p>
+    <h1>Help us plate a better dining experience</h1>
+    <p class="lede">
+      Quick, cozy, and anonymous — rate your meal, share a thought, or drop a photo-worthy win.
+      Every note steers what shows up on your tray next week.
+    </p>
+    <div class="hero-actions">
+      <a class="ghost-btn" href="#recent-submissions">See what others shared</a>
+      <span class="muted">~1 min to submit</span>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hero-quote">“Love the soups, but can we spice up Tuesday mains?”</div>
+    <div class="hero-badges">
+      <span>Fresh greens</span>
+      <span>Cozy vibes</span>
+      <span>Swift service</span>
+    </div>
+    <div class="hero-footer">Your feedback → our recipe for better campus meals.</div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Student form</p>
+      <h2>Tell us how your meal felt today</h2>
+      <p class="muted">Choose what stood out, tap your rating, add notes if you like.</p>
+    </div>
+    <div class="pill pill-soft">Takes under 60 seconds</div>
+  </div>
+
+  <form id="feedback-form" class="stacked">
+    <div class="form-group">
+      <label>What are you reviewing?</label>
+      <div class="chip-grid">
+        {% for category in [
+          "Hygiene",
+          "Food quality",
+          "Menu variety",
+          "Presentation",
+          "Staff behavior",
+          "Other",
+        ] %}
+        <label class="chip">
+          <input type="checkbox" name="categories" value="{{ category }}" />
+          <span>{{ category }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Overall vibes</label>
+      <div class="rating-row" data-target="rating">
+        {% for star in [1, 2, 3, 4, 5] %}
+        <button type="button" class="star" data-value="{{ star }}">⭐</button>
+        {% endfor %}
+        <input type="hidden" id="rating" name="rating" value="5" />
+        <span class="muted" id="rating-label">Great</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="comment">Add flavor (optional)</label>
+      <textarea
+        id="comment"
+        name="comment"
+        placeholder="Did the pasta hit the spot? Was the salad crisp enough?"
+      ></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Send feedback</button>
+      <div id="form-message" role="status"></div>
+    </div>
+  </form>
+</section>
+
+<section class="card" id="recent-submissions">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Community pulse</p>
+      <h2>Recent submissions</h2>
+      <p class="muted">See what your peers are pointing out — fresh from the dining hall.</p>
+    </div>
+    <div class="pill pill-outline">Live updates</div>
+  </div>
+  <div id="recent-list" class="feedback-list"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/student.js"></script>
+{% endblock %}
