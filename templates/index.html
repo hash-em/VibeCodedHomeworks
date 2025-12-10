@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Submit Feedback</h1>
+  <p>Help us improve your dining experience. Select one or more categories and rate your experience.</p>
+  <form id="feedback-form">
+    <div class="form-group">
+      <label>Categories</label>
+      <div class="checkbox-grid">
+        {% for category in [
+          "Hygiene",
+          "Food quality",
+          "Menu variety",
+          "Presentation",
+          "Staff behavior",
+          "Other",
+        ] %}
+        <label class="checkbox-item">
+          <input type="checkbox" name="categories" value="{{ category }}" />
+          {{ category }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="rating">Rating (1-5)</label>
+      <input type="number" id="rating" name="rating" min="1" max="5" value="5" required />
+    </div>
+
+    <div class="form-group">
+      <label for="comment">Comments (optional)</label>
+      <textarea id="comment" name="comment" placeholder="Share details about your experience"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Send feedback</button>
+      <div id="form-message" role="status"></div>
+    </div>
+  </form>
+</section>
+
+<section class="card" id="recent-submissions">
+  <h2>Recent submissions</h2>
+  <div id="recent-list" class="feedback-list"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/student.js"></script>
+{% endblock %}

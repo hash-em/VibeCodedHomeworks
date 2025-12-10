@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Admin Dashboard</h1>
+  <p>View recent feedback, filter by status, and update progress.</p>
+  <div class="filters">
+    <label for="status-filter">Status</label>
+    <select id="status-filter">
+      <option value="">All</option>
+      <option value="New">New</option>
+      <option value="In progress">In progress</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+  </div>
+  <div id="admin-feedback-list" class="feedback-list"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin.js"></script>
+{% endblock %}

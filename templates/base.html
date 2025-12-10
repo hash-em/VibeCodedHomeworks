@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Restudiant Platform</title>
+    <link rel="stylesheet" href="/static/main.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="logo">Restudiant</div>
+      <nav>
+        <a href="/">Submit Feedback</a>
+        <a href="/admin">Admin</a>
+      </nav>
+    </header>
+    <main class="content">{% block content %}{% endblock %}</main>
+    <footer class="site-footer">Bouchoucha University Restaurant — Feedback Platform</footer>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
