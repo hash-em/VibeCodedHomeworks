@@ -9,10 +9,22 @@ const trendBars = document.getElementById("trend-bars");
 const categoryPie = document.getElementById("category-pie");
 const statusPie = document.getElementById("status-pie");
 const attentionList = document.getElementById("attention-list");
+const adminCard = document.getElementById("admin-login-card");
+const adminState = document.getElementById("admin-login-state");
+const adminMessage = document.getElementById("admin-login-message");
+const adminIdInput = document.getElementById("admin-id-input");
+const adminLoginBtn = document.getElementById("admin-login-btn");
+const adminLogoutBtn = document.getElementById("admin-logout-btn");
+const ratingTrendEl = document.getElementById("rating-trend");
+const ratingRangeSwitch = document.getElementById("rating-range");
+
+let isAdmin = (adminCard?.dataset.isAdmin || "false") === "true";
+let currentRange = "hours";
+let latestStats = null;
 
 async function fetchFeedback() {
   const params = new URLSearchParams();
-  if (statusFilter.value) {
+  if (statusFilter?.value) {
     params.set("status", statusFilter.value);
   }
   const response = await fetch(`/api/feedback${params.toString() ? `?${params}` : ""}`);
@@ -45,7 +57,7 @@ function renderFeedbackList(items) {
       <div class="feedback-meta attention-row">Attention score <strong>${item.votes}</strong></div>
       <div class="actions">
         <label for="status-${item.id}">Update status</label>
-        <select id="status-${item.id}" data-id="${item.id}">
+        <select id="status-${item.id}" data-id="${item.id}" ${!isAdmin ? "disabled" : ""}>
           ${["New", "In progress", "Resolved"]
             .map(
               (status) =>
@@ -67,6 +79,7 @@ function renderFeedbackList(items) {
     boostBtn.type = "button";
     boostBtn.className = "button ghost";
     boostBtn.textContent = "Boost attention";
+    boostBtn.disabled = !isAdmin;
     boostBtn.addEventListener("click", async () => {
       await addVote(item.id);
       await Promise.all([fetchFeedback(), fetchStats()]);
@@ -82,6 +95,10 @@ function renderFeedbackList(items) {
 }
 
 async function updateStatus(id, status) {
+  if (!isAdmin) {
+    alert("Please sign in as admin to update statuses.");
+    return;
+  }
   const response = await fetch(`/api/feedback/${id}/status`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -97,6 +114,7 @@ async function updateStatus(id, status) {
 async function fetchStats() {
   const response = await fetch("/api/stats");
   const data = await response.json();
+  latestStats = data;
 
   statTotal.textContent = data.total_feedback;
   statAverage.textContent = data.average_rating?.toFixed(1) ?? "—";
@@ -108,6 +126,7 @@ async function fetchStats() {
   renderPie(categoryPie, data.category_counts);
   renderPie(statusPie, data.status_counts);
   renderAttention(data.top_attention || []);
+  renderRatingTrend(data.rating_trends?.[currentRange] || []);
 }
 
 function renderBars(container, entries, emptyText) {
@@ -187,7 +206,6 @@ function renderPie(canvas, entries) {
     start = end;
   });
 
-  // inner cutout
   ctx.globalCompositeOperation = "destination-out";
   ctx.beginPath();
   ctx.arc(80, 80, 38, 0, Math.PI * 2);
@@ -220,14 +238,45 @@ function renderAttention(items) {
   });
 }
 
+function renderRatingTrend(points) {
+  ratingTrendEl.innerHTML = "";
+  if (!points.length) {
+    ratingTrendEl.innerHTML = '<p class="muted">No ratings yet.</p>';
+    return;
+  }
+  const validPoints = points.filter((p) => p.average !== null && p.average !== undefined);
+  if (!validPoints.length) {
+    ratingTrendEl.innerHTML = '<p class="muted">No ratings yet.</p>';
+    return;
+  }
+  const max = 5;
+  validPoints.forEach((point) => {
+    const bar = document.createElement("div");
+    bar.className = "rating-bar";
+    const height = (point.average / max) * 100;
+    bar.innerHTML = `
+      <div class="rating-bar-fill" style="height:${height}%"></div>
+      <span class="rating-bar-label">${point.label}</span>
+      <span class="rating-bar-value">${point.average.toFixed(1)}</span>
+    `;
+    ratingTrendEl.appendChild(bar);
+  });
+}
+
 function colorForIndex(index) {
   const palette = ["#f97463", "#f2c84b", "#6cc7a1", "#62a8f3", "#c17dd4", "#ff9f6e"];
   return palette[index % palette.length];
 }
 
 async function addVote(id) {
+  if (!isAdmin) {
+    alert("Sign in as admin to boost attention.");
+    return;
+  }
   const response = await fetch(`/api/feedback/${id}/vote`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vote: "up" }),
   });
   if (!response.ok) {
     const data = await response.json();
@@ -235,6 +284,50 @@ async function addVote(id) {
   }
 }
 
-statusFilter.addEventListener("change", fetchFeedback);
+async function handleAdminLogin() {
+  adminMessage.textContent = "";
+  const id = adminIdInput.value.trim();
+  if (!id) {
+    adminMessage.textContent = "Enter the admin ID.";
+    return;
+  }
+  const response = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    adminMessage.textContent = data.error || "Unable to sign in";
+    adminMessage.style.color = "red";
+    return;
+  }
+  isAdmin = data.role === "admin";
+  adminState.textContent = isAdmin ? "Admin" : "Locked";
+  adminMessage.textContent = isAdmin ? "Unlocked" : "Signed in";
+  adminMessage.style.color = "var(--success)";
+  await Promise.all([fetchFeedback(), fetchStats()]);
+}
+
+async function handleAdminLogout() {
+  await fetch("/api/logout", { method: "POST" });
+  isAdmin = false;
+  adminState.textContent = "Locked";
+  adminMessage.textContent = "";
+  await Promise.all([fetchFeedback(), fetchStats()]);
+}
+
+statusFilter?.addEventListener("change", fetchFeedback);
+adminLoginBtn?.addEventListener("click", handleAdminLogin);
+adminLogoutBtn?.addEventListener("click", handleAdminLogout);
+ratingRangeSwitch?.addEventListener("click", (event) => {
+  if (event.target.tagName !== "BUTTON") return;
+  currentRange = event.target.dataset.range;
+  ratingRangeSwitch.querySelectorAll("button").forEach((btn) => btn.classList.toggle("active", btn === event.target));
+  if (latestStats) {
+    renderRatingTrend(latestStats.rating_trends?.[currentRange] || []);
+  }
+});
+
 fetchFeedback();
 fetchStats();

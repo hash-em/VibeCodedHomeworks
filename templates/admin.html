@@ -1,5 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
+<section class="card login-card" id="admin-login-card" data-is-admin="{{ 'true' if is_admin else 'false' }}">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Admin access</p>
+      <h2>Sign in to manage the dining floor</h2>
+      <p class="muted">Use the admin ID to unlock moderation and stats.</p>
+    </div>
+    <div class="pill pill-outline" id="admin-login-state">{{ 'Admin' if is_admin else 'Locked' }}</div>
+  </div>
+  <div class="login-grid">
+    <label class="stacked">
+      <span>Admin ID</span>
+      <input id="admin-id-input" type="text" placeholder="admin" value="admin" />
+    </label>
+    <div class="login-actions">
+      <button type="button" id="admin-login-btn">Sign in</button>
+      <button type="button" class="ghost" id="admin-logout-btn">Sign out</button>
+      <p class="muted" id="admin-login-message"></p>
+    </div>
+  </div>
+</section>
+
 <section class="card" id="feedback">
   <div class="card-header">
     <div>
@@ -83,6 +105,18 @@
         <span class="muted">Most-upvoted feedback</span>
       </div>
       <div id="attention-list" class="attention-list"></div>
+    </div>
+    <div class="stat-panel wide">
+      <div class="panel-header">
+        <h3>Stars over time</h3>
+        <div class="chip-switch" id="rating-range">
+          <button type="button" data-range="hours" class="active">Hours</button>
+          <button type="button" data-range="days">Days</button>
+          <button type="button" data-range="weeks">Weeks</button>
+          <button type="button" data-range="months">Months</button>
+        </div>
+      </div>
+      <div id="rating-trend" class="rating-trend"></div>
     </div>
   </div>
 </section>

@@ -24,6 +24,29 @@
   </div>
 </section>
 
+<section class="card login-card">
+  <div class="card-header">
+    <div>
+      <p class="eyebrow">Quick login</p>
+      <h2>Sign in with your national ID</h2>
+      <p class="muted">Stay anonymous, but let us recognize your votes and submissions.</p>
+    </div>
+    <div class="pill pill-outline" id="user-login-state">Not signed in</div>
+  </div>
+
+  <div class="login-grid">
+    <label class="stacked">
+      <span>National ID</span>
+      <input id="user-id-input" type="text" inputmode="numeric" placeholder="09822134" />
+    </label>
+    <div class="login-actions">
+      <button type="button" id="user-login-btn">Sign in</button>
+      <button type="button" class="ghost" id="user-logout-btn">Sign out</button>
+      <p class="muted" id="user-login-message"></p>
+    </div>
+  </div>
+</section>
+
 <section class="card">
   <div class="card-header">
     <div>
