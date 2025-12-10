@@ -28,10 +28,15 @@ def init_db() -> None:
                 rating INTEGER NOT NULL,
                 comment TEXT,
                 status TEXT NOT NULL DEFAULT 'New',
+                votes INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL
             );
             """
         )
+        # Backfill column for older databases
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(feedback)")}
+        if "votes" not in columns:
+            conn.execute("ALTER TABLE feedback ADD COLUMN votes INTEGER NOT NULL DEFAULT 0")
         conn.commit()
     finally:
         conn.close()
@@ -48,6 +53,7 @@ def serialize_feedback(row: sqlite3.Row) -> dict:
         "rating": row["rating"],
         "comment": row["comment"],
         "status": row["status"],
+        "votes": row["votes"],
         "created_at": row["created_at"],
     }
 
@@ -67,11 +73,13 @@ def compute_stats() -> dict:
             "status_counts": {},
             "category_counts": {},
             "trend": [],
+            "top_attention": [],
         }
 
     status_counts = {}
     category_counts = {}
     ratings: List[int] = []
+    attention: List[dict] = []
     for row in rows:
         status = row["status"]
         status_counts[status] = status_counts.get(status, 0) + 1
@@ -81,6 +89,17 @@ def compute_stats() -> dict:
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
         ratings.append(row["rating"])
+        attention.append(
+            {
+                "id": row["id"],
+                "votes": row["votes"],
+                "comment": row["comment"],
+                "categories": categories,
+                "rating": row["rating"],
+                "status": row["status"],
+                "created_at": row["created_at"],
+            }
+        )
 
     # Trend for last 7 days including today
     today = datetime.utcnow().date()
@@ -105,6 +124,7 @@ def compute_stats() -> dict:
         "status_counts": status_counts,
         "category_counts": category_counts,
         "trend": trend,
+        "top_attention": sorted(attention, key=lambda item: item["votes"], reverse=True)[:3],
     }
 
 
@@ -139,7 +159,7 @@ def submit_feedback():
     conn = get_connection()
     try:
         conn.execute(
-            "INSERT INTO feedback (categories, rating, comment, status, created_at) VALUES (?, ?, ?, 'New', ?)",
+            "INSERT INTO feedback (categories, rating, comment, status, votes, created_at) VALUES (?, ?, ?, 'New', 0, ?)",
             (json.dumps(categories), rating_int, comment, datetime.utcnow().isoformat()),
         )
         conn.commit()
@@ -189,6 +209,25 @@ def update_status(feedback_id: int):
         conn.close()
 
     return jsonify({"message": "Status updated"})
+
+
+@app.route("/api/feedback/<int:feedback_id>/vote", methods=["POST"])
+def add_vote(feedback_id: int):
+    conn = get_connection()
+    try:
+        result = conn.execute(
+            "UPDATE feedback SET votes = votes + 1 WHERE id = ?", (feedback_id,)
+        )
+        conn.commit()
+        if result.rowcount == 0:
+            return jsonify({"error": "Feedback not found."}), 404
+        row = conn.execute(
+            "SELECT votes FROM feedback WHERE id = ?", (feedback_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+    return jsonify({"message": "Vote recorded", "votes": row["votes"]})
 
 
 if __name__ == "__main__":

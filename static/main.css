@@ -365,6 +365,10 @@ button.primary:active {
   align-items: center;
 }
 
+.attention-row {
+  gap: 4px;
+}
+
 .status-pill {
   padding: 4px 10px;
   border-radius: 999px;
@@ -460,7 +464,7 @@ button.primary:active {
 
 .stat-panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
@@ -517,6 +521,52 @@ button.primary:active {
 
 .bar-list.compact .bar {
   height: 8px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+canvas {
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 50%);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.attention-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.attention-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+}
+
+.attention-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.attention-body {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.attention-score {
+  margin-top: 0.35rem;
+  font-weight: 700;
+  color: var(--primary-dark);
 }
 
 .feedback-list .rating-stars {

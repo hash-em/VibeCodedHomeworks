@@ -55,14 +55,20 @@
         <h3>By category</h3>
         <span class="muted">Top themes</span>
       </div>
-      <div id="category-bars" class="bar-list"></div>
+      <div class="chart-row">
+        <canvas id="category-pie" width="160" height="160"></canvas>
+        <div id="category-bars" class="bar-list"></div>
+      </div>
     </div>
     <div class="stat-panel">
       <div class="panel-header">
         <h3>Status mix</h3>
         <span class="muted">Progress snapshot</span>
       </div>
-      <div id="status-bars" class="bar-list"></div>
+      <div class="chart-row">
+        <canvas id="status-pie" width="160" height="160"></canvas>
+        <div id="status-bars" class="bar-list"></div>
+      </div>
     </div>
     <div class="stat-panel wide">
       <div class="panel-header">
@@ -70,6 +76,13 @@
         <span class="muted">Pulse of submissions</span>
       </div>
       <div id="trend-bars" class="bar-list compact"></div>
+    </div>
+    <div class="stat-panel">
+      <div class="panel-header">
+        <h3>Attention magnets</h3>
+        <span class="muted">Most-upvoted feedback</span>
+      </div>
+      <div id="attention-list" class="attention-list"></div>
     </div>
   </div>
 </section>
